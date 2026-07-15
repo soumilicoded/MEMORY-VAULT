@@ -1,0 +1,1104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SyncXyou — Memory Vault™</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink-950:#12151c;
+    --ink-900:#1b202b;
+    --ink-850:#212736;
+    --ink-800:#262c3d;
+    --ink-700:#333a4d;
+    --hairline:#3a4258;
+    --paper:#e9e4d8;
+    --text-primary:#ece9e1;
+    --text-muted:#9aa1b5;
+    --text-faint:#6b7285;
+    --amber:#e3a73b;
+    --teal:#4fa99c;
+    --rust:#c1583b;
+    --lav:#9285d6;
+    --sage:#84a866;
+    --radius:3px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:
+      radial-gradient(1200px 600px at 15% -10%, rgba(227,167,59,0.06), transparent 60%),
+      radial-gradient(900px 500px at 100% 0%, rgba(79,169,156,0.05), transparent 55%),
+      var(--ink-950);
+    color:var(--text-primary);
+    font-family:'Inter',sans-serif;
+    min-height:100vh;
+  }
+  ::selection{background:var(--amber);color:var(--ink-950);}
+  #app{max-width:1080px;margin:0 auto;padding:28px 20px 80px;}
+
+  /* ---------- Header ---------- */
+  .header{
+    display:flex;align-items:center;gap:16px;
+    padding-bottom:22px;margin-bottom:22px;
+    border-bottom:1px solid var(--hairline);
+  }
+  .mark{
+    width:46px;height:46px;flex:none;border-radius:50%;
+    border:1.5px dashed var(--amber);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'IBM Plex Mono',monospace;font-weight:600;font-size:13px;
+    color:var(--amber);letter-spacing:0.5px;
+    transform:rotate(-6deg);
+  }
+  .header h1{
+    font-family:'Fraunces',serif;font-weight:600;font-size:28px;
+    margin:0;letter-spacing:0.2px;
+  }
+  .header .sub{
+    margin:2px 0 0;color:var(--text-muted);font-size:13px;
+    font-family:'IBM Plex Mono',monospace;letter-spacing:0.4px;
+  }
+  .header .badge{
+    margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:11px;
+    color:var(--text-faint);border:1px solid var(--hairline);
+    padding:5px 10px;border-radius:20px;white-space:nowrap;
+  }
+
+  /* ---------- Tabs ---------- */
+  .tabs{display:flex;gap:6px;margin-bottom:26px;flex-wrap:wrap;}
+  .tab-btn{
+    font-family:'IBM Plex Mono',monospace;font-size:12.5px;letter-spacing:0.6px;
+    background:transparent;border:1px solid var(--hairline);color:var(--text-muted);
+    padding:9px 16px;border-radius:20px;cursor:pointer;transition:all .15s ease;
+    text-transform:uppercase;
+  }
+  .tab-btn:hover{border-color:var(--amber);color:var(--text-primary);}
+  .tab-btn.active{background:var(--amber);border-color:var(--amber);color:var(--ink-950);font-weight:600;}
+
+  .panel{display:none;}
+  .panel.active{display:block;animation:fade .25s ease;}
+  @keyframes fade{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+
+  .section-title{
+    font-family:'Fraunces',serif;font-size:20px;font-weight:600;margin:0 0 4px;
+  }
+  .section-hint{color:var(--text-muted);font-size:13px;margin:0 0 18px;}
+
+  /* ---------- Cards / Forms ---------- */
+  .card{
+    background:var(--ink-900);border:1px solid var(--hairline);border-radius:var(--radius);
+    padding:18px;margin-bottom:18px;
+  }
+  label{display:block;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-faint);
+    text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;}
+  textarea,input[type="text"],select{
+    width:100%;background:var(--ink-850);border:1px solid var(--hairline);color:var(--text-primary);
+    border-radius:var(--radius);padding:10px 12px;font-family:'Inter',sans-serif;font-size:14px;
+    margin-bottom:14px;resize:vertical;
+  }
+  textarea:focus,input:focus,select:focus{outline:2px solid var(--teal);outline-offset:1px;border-color:var(--teal);}
+  .row{display:flex;gap:12px;flex-wrap:wrap;}
+  .row > *{flex:1;min-width:180px;}
+  button.primary{
+    background:var(--amber);color:var(--ink-950);border:none;font-weight:600;
+    padding:10px 18px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13.5px;
+    transition:transform .12s ease, opacity .12s ease;
+  }
+  button.primary:hover{transform:translateY(-1px);}
+  button.primary:disabled{opacity:0.5;cursor:wait;transform:none;}
+  button.ghost{
+    background:transparent;border:1px solid var(--hairline);color:var(--text-muted);
+    padding:9px 16px;border-radius:20px;cursor:pointer;font-family:'Inter',sans-serif;font-size:13px;
+  }
+  button.ghost:hover{color:var(--text-primary);border-color:var(--teal);}
+
+  .search-row{display:flex;gap:10px;margin-bottom:6px;}
+  .search-row input{margin-bottom:0;}
+  .search-note{font-size:12px;color:var(--text-faint);margin:8px 0 18px;font-style:italic;}
+
+  /* ---------- Ledger entries ---------- */
+  .entry{
+    display:flex;gap:14px;padding:16px 4px;border-bottom:1px dashed var(--hairline);
+  }
+  .entry:last-child{border-bottom:none;}
+  .stamp{
+    flex:none;width:56px;height:56px;border-radius:50%;border:1.5px dashed;
+    display:flex;align-items:center;justify-content:center;text-align:center;
+    font-family:'IBM Plex Mono',monospace;font-size:9px;font-weight:600;letter-spacing:0.3px;
+    transform:rotate(-4deg);line-height:1.25;
+  }
+  .entry-body{flex:1;min-width:0;}
+  .entry-top{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:4px;}
+  .cat-dot{width:8px;height:8px;border-radius:50%;flex:none;}
+  .cat-label{font-family:'IBM Plex Mono',monospace;font-size:11px;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);}
+  .entry-date{margin-left:auto;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-faint);}
+  .entry-text{font-size:14.5px;line-height:1.5;color:var(--text-primary);margin:4px 0 8px;}
+  .tags{display:flex;gap:6px;flex-wrap:wrap;}
+  .tag{font-size:11px;font-family:'IBM Plex Mono',monospace;color:var(--teal);border:1px solid rgba(79,169,156,0.35);
+    padding:2px 8px;border-radius:10px;}
+  .loc-path{font-family:'IBM Plex Mono',monospace;font-size:12.5px;color:var(--text-muted);}
+  .loc-path b{color:var(--text-primary);}
+  .entry-actions{margin-top:8px;}
+  .entry-actions button{font-size:11.5px;padding:5px 12px;}
+  .history{margin-top:10px;padding-top:8px;border-top:1px dashed var(--hairline);display:none;}
+  .history.open{display:block;}
+  .history-item{font-size:12px;color:var(--text-muted);font-family:'IBM Plex Mono',monospace;margin-bottom:4px;}
+  .empty{color:var(--text-faint);font-size:13px;padding:20px 0;text-align:center;font-style:italic;}
+
+  /* ---------- Timeline ---------- */
+  .month-divider{
+    font-family:'Fraunces',serif;font-size:16px;font-weight:600;color:var(--amber);
+    margin:26px 0 8px;padding-bottom:6px;border-bottom:1px solid var(--hairline);
+  }
+  .month-divider:first-child{margin-top:0;}
+  .tl-item{display:flex;gap:10px;padding:9px 0;border-bottom:1px dashed var(--hairline);font-size:13.5px;}
+  .tl-item:last-child{border-bottom:none;}
+  .tl-date{font-family:'IBM Plex Mono',monospace;font-size:11.5px;color:var(--text-faint);width:56px;flex:none;padding-top:1px;}
+  .tl-kind{flex:none;font-family:'IBM Plex Mono',monospace;font-size:10.5px;text-transform:uppercase;
+    padding:2px 8px;border-radius:10px;height:fit-content;}
+  .tl-text{color:var(--text-primary);}
+  .tl-text span{color:var(--text-muted);}
+
+  /* ---------- Insights ---------- */
+  .stats-grid{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:22px;}
+  .stat{
+    flex:1;min-width:130px;background:var(--ink-900);border:1px solid var(--hairline);
+    border-radius:var(--radius);padding:14px 16px;
+  }
+  .stat .num{font-family:'Fraunces',serif;font-size:26px;font-weight:600;color:var(--amber);}
+  .stat .lbl{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-faint);
+    text-transform:uppercase;letter-spacing:0.5px;margin-top:2px;}
+  .insight-card{
+    background:var(--ink-900);border:1px solid var(--hairline);border-left:3px solid var(--amber);
+    border-radius:var(--radius);padding:14px 16px;margin-bottom:10px;font-size:14px;line-height:1.5;
+    display:flex;gap:12px;align-items:flex-start;
+  }
+  .insight-card .seal{
+    flex:none;width:26px;height:26px;border-radius:50%;border:1.5px dashed var(--amber);
+    display:flex;align-items:center;justify-content:center;color:var(--amber);font-size:12px;font-family:'IBM Plex Mono',monospace;
+  }
+
+  footer{margin-top:50px;padding-top:16px;border-top:1px solid var(--hairline);
+    font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-faint);
+    display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  footer a{color:var(--text-faint);cursor:pointer;text-decoration:underline;}
+  .loading-dots::after{content:'';animation:dots 1.2s steps(4,end) infinite;}
+  @keyframes dots{0%{content:'';}25%{content:'.';}50%{content:'..';}75%{content:'...';}}
+
+  /* ---------- Voice + Camera ---------- */
+  .mic-btn{flex:none;width:42px;padding:0 !important;font-size:15px;line-height:1;}
+  .mic-btn.recording{background:var(--rust);border-color:var(--rust);color:#fff;animation:pulse 1s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.55;}}
+
+  .modal-overlay{display:none;position:fixed;inset:0;background:rgba(10,12,17,0.82);z-index:50;
+    align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(2px);}
+  .modal-overlay.open{display:flex;}
+  .modal-card{background:var(--ink-900);border:1px solid var(--hairline);border-radius:var(--radius);
+    padding:20px;max-width:480px;width:100%;max-height:88vh;overflow-y:auto;}
+  .modal-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:2px;}
+  #camera-video,#camera-shot{width:100%;border-radius:var(--radius);border:1px solid var(--hairline);
+    background:#000;margin:10px 0;max-height:300px;object-fit:cover;display:block;}
+  .modal-actions{display:flex;gap:10px;margin-bottom:6px;}
+  .found-banner{padding:10px 14px;border-radius:var(--radius);margin:10px 0;font-size:13.5px;border:1px solid;line-height:1.4;}
+  .found-banner.yes{border-color:var(--sage);color:var(--sage);background:rgba(132,168,102,0.08);}
+  .found-banner.no{border-color:var(--rust);color:var(--rust);background:rgba(193,88,59,0.08);}
+  .detected-item{display:flex;align-items:center;gap:10px;padding:8px 2px;border-bottom:1px dashed var(--hairline);}
+  .detected-item input[type="checkbox"]{width:16px;height:16px;flex:none;margin:0;accent-color:var(--amber);}
+  .detected-item .di-name{font-weight:600;flex:1;font-size:13.5px;}
+  .detected-item .di-cat{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-faint);}
+
+  .kbd-hint{font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--text-faint);}
+  .entry-actions button.danger{color:var(--rust);}
+  .entry-actions button.danger:hover{border-color:var(--rust);}
+
+  .offline-banner{display:none;position:fixed;left:0;right:0;bottom:0;z-index:60;
+    background:var(--rust);color:#fff;text-align:center;font-family:'IBM Plex Mono',monospace;
+    font-size:12px;padding:8px 12px;}
+  .offline-banner.show{display:block;}
+
+  .chart-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .chart-label{width:96px;flex:none;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-muted);}
+  .chart-track{flex:1;height:10px;background:var(--ink-850);border-radius:6px;overflow:hidden;}
+  .chart-fill{height:100%;border-radius:6px;transition:width .4s ease;}
+  .chart-count{width:24px;flex:none;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--text-faint);}
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div class="header">
+    <div class="mark">SX</div>
+    <div>
+      <h1>SyncXyou</h1>
+      <p class="sub">MEMORY VAULT™ — PERSONAL KNOWLEDGE &amp; ASSET LEDGER</p>
+    </div>
+    <div class="badge">PROTOTYPE BUILD · 2026</div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="vault">Vault</button>
+    <button class="tab-btn" data-tab="assets">Assets</button>
+    <button class="tab-btn" data-tab="timeline">Timeline</button>
+    <button class="tab-btn" data-tab="insights">Insights</button>
+  </div>
+
+  <!-- VAULT -->
+  <div class="panel active" id="panel-vault">
+    <p class="section-title">Memory Vault</p>
+    <p class="section-hint">File a thought, note, or experience. The AI reads it and files it into a category with searchable tags — automatically.</p>
+    <div class="card">
+      <label for="mem-input">New entry</label>
+      <textarea id="mem-input" rows="3" placeholder="e.g. Had my first ML project discussion with Professor Sharma today, decided to explore graph neural networks for the hackathon..."></textarea>
+      <div class="row" style="gap:10px;align-items:center;margin-bottom:0;">
+        <button class="primary" id="mem-file-btn" style="flex:none;">File entry</button>
+        <button class="ghost mic-btn" id="mem-dictate-btn" title="Dictate entry" aria-label="Dictate entry by voice" style="flex:none;">🎙️</button>
+        <span class="kbd-hint" style="flex:1;text-align:right;">⌘/Ctrl + Enter to file</span>
+      </div>
+    </div>
+    <div class="search-row">
+      <input type="text" id="mem-search" placeholder="Ask the vault… e.g. &quot;what did I decide about my branch&quot;">
+      <button class="ghost mic-btn" id="mem-mic-btn" title="Search by voice">🎙️</button>
+      <button class="ghost" id="mem-search-btn">Search</button>
+      <button class="ghost" id="mem-search-clear" style="display:none;">Clear</button>
+    </div>
+    <p class="search-note" id="mem-search-note" style="display:none;"></p>
+    <div class="card" id="mem-list"></div>
+  </div>
+
+  <!-- ASSETS -->
+  <div class="panel" id="panel-assets">
+    <p class="section-title">Real-Life Storage Tracker</p>
+    <p class="section-hint">Register where a physical object lives. Every move is logged, so you can always trace it back.</p>
+    <div class="card">
+      <div class="row">
+        <div>
+          <label for="asset-name">Object</label>
+          <input type="text" id="asset-name" placeholder="e.g. Passport">
+        </div>
+        <div>
+          <label for="asset-cat">Category</label>
+          <select id="asset-cat">
+            <option>Documents</option><option>Electronics</option><option>Clothing</option>
+            <option>Tools</option><option>Valuables</option><option>Stationery</option><option>Other</option>
+          </select>
+        </div>
+      </div>
+      <label for="asset-loc">Location (path, comma separated)</label>
+      <input type="text" id="asset-loc" placeholder="e.g. Home, Bedroom, Cupboard, Top Shelf">
+      <button class="primary" id="asset-file-btn">Register object</button>
+    </div>
+    <div class="search-row">
+      <input type="text" id="asset-search" placeholder="Where is… e.g. &quot;the cable for my monitor&quot;">
+      <button class="ghost mic-btn" id="asset-mic-btn" title="Search by voice">🎙️</button>
+      <button class="ghost" id="asset-search-btn">Search</button>
+      <button class="ghost" id="asset-search-clear" style="display:none;">Clear</button>
+    </div>
+    <p class="search-note" id="asset-search-note" style="display:none;"></p>
+    <button class="ghost" id="scan-btn" style="margin-bottom:18px;">📷 Scan a shelf or wardrobe</button>
+    <div class="card" id="asset-list"></div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="panel" id="panel-timeline">
+    <p class="section-title">Timeline</p>
+    <p class="section-hint">Every memory filed and every object moved, replayed in order — like commits, but for your life.</p>
+    <div class="card" id="timeline-list"></div>
+  </div>
+
+  <!-- INSIGHTS -->
+  <div class="panel" id="panel-insights">
+    <p class="section-title">AI Insights</p>
+    <p class="section-hint">Patterns the AI notices across what you've filed. Regenerate any time.</p>
+    <div class="stats-grid" id="stats-grid"></div>
+    <div class="card" id="category-chart"></div>
+    <button class="primary" id="insights-btn">Generate insights</button>
+    <div style="margin-top:16px;" id="insights-list"></div>
+  </div>
+
+  <div class="offline-banner" id="offline-banner">You're offline — filing and search will queue locally until AI features reconnect.</div>
+
+  <footer>
+    <span>SyncXyou · Memory Vault™ — client-side AI prototype, data stored locally to your account.</span>
+    <span>
+      <a id="export-link">Export data</a> ·
+      <a id="import-link">Import data</a> ·
+      <a id="reset-link">Reset demo data</a>
+    </span>
+    <input type="file" id="import-file" accept="application/json" style="display:none;">
+  </footer>
+</div>
+
+<div class="modal-overlay" id="camera-modal">
+  <div class="modal-card">
+    <div class="modal-head">
+      <p class="section-title" style="margin:0;">Camera scan</p>
+      <button class="ghost" id="camera-close-btn">Close</button>
+    </div>
+    <p class="section-hint" id="camera-context-note">Point the camera at a shelf, drawer, or wardrobe.</p>
+    <video id="camera-video" autoplay playsinline muted></video>
+    <canvas id="camera-canvas" style="display:none;"></canvas>
+    <img id="camera-shot" style="display:none;" alt="Captured shelf photo">
+    <div class="modal-actions">
+      <button class="primary" id="camera-capture-btn">Capture</button>
+      <button class="ghost" id="camera-retake-btn" style="display:none;">Retake</button>
+    </div>
+    <div id="camera-results"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const CATS = {
+    Knowledge:  {color:'var(--teal)'},
+    Experience: {color:'var(--amber)'},
+    Relationship:{color:'var(--rust)'},
+    Decision:   {color:'var(--lav)'},
+    Learning:   {color:'var(--sage)'}
+  };
+  const ASSET_COLOR = 'var(--teal)';
+
+  let state = {memories: [], assets: [], seq: {mv:0, at:0}};
+  let searchActiveMem = false, searchActiveAsset = false;
+
+  function uid(){ return (crypto.randomUUID ? crypto.randomUUID() : 'id-'+Date.now()+'-'+Math.random().toString(16).slice(2)); }
+  function escapeHtml(s){
+    return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function fmtDate(iso){
+    const d = new Date(iso);
+    return d.toLocaleDateString('en-US',{day:'2-digit',month:'short',year:'numeric'});
+  }
+  function catalogNo(prefix, n){
+    return prefix + '-' + new Date().getFullYear() + '-' + String(n).padStart(4,'0');
+  }
+
+  // ---------- Persistence ----------
+  async function save(){
+    try{ await window.storage.set('vault-data', JSON.stringify(state), false); }
+    catch(e){ console.error('save failed', e); }
+    searchCache.clear(); // data changed — cached search results are now stale
+  }
+  async function load(){
+    try{
+      const res = await window.storage.get('vault-data', false);
+      if(res && res.value){ state = JSON.parse(res.value); return true; }
+    }catch(e){ /* key doesn't exist yet */ }
+    return false;
+  }
+  function seedDemoData(){
+    const now = Date.now();
+    const day = 86400000;
+    state = {
+      memories: [
+        {id:uid(), text:"Decided to pursue IT with a Bioinformatics specialization — strong placement track record, and it lines up with my interest in computational biology.", category:'Decision', tags:['branch','bioinformatics','career'], date:new Date(now-40*day).toISOString()},
+        {id:uid(), text:"First internship orientation today. Nervous but excited — team seems friendly, working on a recommendation engine.", category:'Experience', tags:['internship','orientation'], date:new Date(now-25*day).toISOString()},
+        {id:uid(), text:"Met Professor Sharma to discuss the ML project direction — leaning towards graph neural networks for the hackathon submission.", category:'Relationship', tags:['professor sharma','ml project'], date:new Date(now-12*day).toISOString()},
+        {id:uid(), text:"Finally understood Lambert W functions and how they show up in functional graph counting problems — huge unlock for the EGF approach.", category:'Learning', tags:['math','egf','competitive programming'], date:new Date(now-3*day).toISOString()},
+      ],
+      assets: [
+        {id:uid(), name:'Passport', category:'Documents', location:['Home','Bedroom','Cupboard','Top Shelf'], history:[], date:new Date(now-60*day).toISOString()},
+        {id:uid(), name:'Laptop Charger', category:'Electronics', location:['Home','Bedroom','Desk Drawer'], history:[{location:['Hostel','Room 214'], date:new Date(now-30*day).toISOString()}], date:new Date(now-70*day).toISOString()},
+      ],
+      seq:{mv:4, at:2}
+    };
+  }
+
+  // ---------- Claude API ----------
+  async function callClaudeJSON(system, user){
+    try{
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          model:'claude-sonnet-4-6',
+          max_tokens:1000,
+          system: system,
+          messages:[{role:'user', content:user}]
+        })
+      });
+      const data = await res.json();
+      const text = (data.content||[]).map(b=>b.text||'').join('');
+      const clean = text.replace(/```json|```/g,'').trim();
+      return JSON.parse(clean);
+    }catch(e){
+      console.error('Claude call failed', e);
+      return null;
+    }
+  }
+
+  async function classifyMemory(text){
+    const result = await callClaudeJSON(
+      "You are a precise classifier for a personal memory system. Respond with ONLY valid JSON, no markdown fences, no explanation.",
+      `Classify this personal memory entry into exactly one category from: Knowledge, Experience, Relationship, Decision, Learning.\nAlso produce up to 4 short lowercase tags (1-2 words each).\n\nEntry: "${text}"\n\nRespond as JSON exactly like: {"category": "Knowledge", "tags": ["tag1","tag2"]}`
+    );
+    if(result && CATS[result.category]){
+      return {category: result.category, tags: Array.isArray(result.tags) ? result.tags.slice(0,4) : []};
+    }
+    return {category:'Knowledge', tags:[]};
+  }
+
+  // ---------- Search cache (avoids redundant AI calls for repeated queries) ----------
+  const SEARCH_CACHE_LIMIT = 20;
+  const searchCache = new Map(); // key: `${scope}:${query}` -> array of ids
+
+  function cacheGet(key){
+    if(!searchCache.has(key)) return null;
+    const val = searchCache.get(key);
+    searchCache.delete(key); searchCache.set(key, val); // refresh recency
+    return val;
+  }
+  function cacheSet(key, val){
+    if(searchCache.has(key)) searchCache.delete(key);
+    searchCache.set(key, val);
+    if(searchCache.size > SEARCH_CACHE_LIMIT){
+      searchCache.delete(searchCache.keys().next().value); // evict oldest
+    }
+  }
+
+  async function semanticSearch(query, items, describeFn, cacheScope){
+    const condensed = items.map(it => ({id: it.id, desc: describeFn(it)}));
+    if(condensed.length === 0) return [];
+    const cacheKey = `${cacheScope}:${query.toLowerCase()}:${items.length}`;
+    const cached = cacheGet(cacheKey);
+    if(cached) return cached;
+    const result = await callClaudeJSON(
+      "You search a personal ledger for relevant entries. Respond with ONLY valid JSON, no explanation.",
+      `Query: "${query}"\n\nEntries:\n${JSON.stringify(condensed)}\n\nReturn the ids of entries relevant to the query, most relevant first, max 6. If none are relevant return an empty list.\nRespond as JSON exactly like: {"ids": ["id1","id2"]}`
+    );
+    let ids;
+    if(result && Array.isArray(result.ids)){
+      ids = result.ids;
+    } else {
+      const q = query.toLowerCase();
+      ids = items.filter(it => describeFn(it).toLowerCase().includes(q)).map(it=>it.id);
+    }
+    cacheSet(cacheKey, ids);
+    return ids;
+  }
+
+  async function generateInsights(){
+    const memByCategory = {};
+    state.memories.forEach(m => memByCategory[m.category] = (memByCategory[m.category]||0)+1);
+    const stats = {
+      totalMemories: state.memories.length,
+      totalAssets: state.assets.length,
+      memoriesByCategory: memByCategory,
+      recentMemories: state.memories.slice(-8).map(m => ({category:m.category, date:m.date.slice(0,10), text:m.text.slice(0,100)})),
+      assetCategories: [...new Set(state.assets.map(a=>a.category))],
+      totalMoves: state.assets.reduce((s,a)=>s+a.history.length,0)
+    };
+    const result = await callClaudeJSON(
+      "You analyze a personal memory and asset ledger and surface short, specific, genuinely useful observations. Respond with ONLY valid JSON, no explanation.",
+      `Here is summary data from a personal ledger app:\n${JSON.stringify(stats)}\n\nWrite exactly 3 short insights (each under 22 words) about patterns in this data. Be specific, not generic. If data is sparse, note that plainly instead of inventing detail.\nRespond as JSON exactly like: {"insights": ["...", "...", "..."]}`
+    );
+    if(result && Array.isArray(result.insights) && result.insights.length){
+      return result.insights.slice(0,3);
+    }
+    // fallback heuristic insights
+    const fallback = [];
+    const topCat = Object.entries(memByCategory).sort((a,b)=>b[1]-a[1])[0];
+    if(topCat) fallback.push(`Most of your filed memories (${topCat[1]}) fall under "${topCat[0]}."`);
+    fallback.push(`You've registered ${state.assets.length} object${state.assets.length===1?'':'s'} and logged ${stats.totalMoves} location move${stats.totalMoves===1?'':'s'}.`);
+    fallback.push(`${state.memories.length} memories filed so far — keep adding entries for richer AI insights.`);
+    return fallback;
+  }
+
+  // ---------- Rendering: Vault ----------
+  function memoryStamp(m, n){
+    const c = (CATS[m.category]||CATS.Knowledge).color;
+    return `<div class="stamp" style="border-color:${c};color:${c};">${catalogNo('MV', n)}</div>`;
+  }
+
+  function renderMemoryList(list, isSearch){
+    const container = document.getElementById('mem-list');
+    if(!list.length){
+      container.innerHTML = `<div class="empty">${isSearch ? 'No matching entries found.' : 'No entries filed yet. Write your first memory above.'}</div>`;
+      return;
+    }
+    const sorted = [...list].sort((a,b)=> new Date(b.date) - new Date(a.date));
+    container.innerHTML = sorted.map(m => {
+      const idx = state.memories.findIndex(x=>x.id===m.id);
+      const c = (CATS[m.category]||CATS.Knowledge).color;
+      return `<div class="entry">
+        ${memoryStamp(m, idx+1)}
+        <div class="entry-body">
+          <div class="entry-top">
+            <span class="cat-dot" style="background:${c};"></span>
+            <span class="cat-label">${escapeHtml(m.category)}</span>
+            <span class="entry-date">${fmtDate(m.date)}</span>
+          </div>
+          <div class="entry-text">${escapeHtml(m.text)}</div>
+          <div class="tags">${(m.tags||[]).map(t=>`<span class="tag">${escapeHtml(t)}</span>`).join('')}</div>
+          <div class="entry-actions">
+            <button class="ghost" data-edit-mem="${m.id}">Edit</button>
+            <button class="ghost danger" data-del-mem="${m.id}">Delete</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    container.querySelectorAll('[data-edit-mem]').forEach(btn=>{
+      btn.addEventListener('click', (e) => editMemory(btn.getAttribute('data-edit-mem'), e.currentTarget));
+    });
+    container.querySelectorAll('[data-del-mem]').forEach(btn=>{
+      btn.addEventListener('click', () => deleteMemory(btn.getAttribute('data-del-mem')));
+    });
+  }
+
+  async function editMemory(id, btnEl){
+    const mem = state.memories.find(m=>m.id===id);
+    if(!mem) return;
+    const updated = prompt('Edit memory text:', mem.text);
+    if(updated === null || !updated.trim()) return;
+    mem.text = updated.trim();
+    if(btnEl){ btnEl.disabled = true; btnEl.textContent = 'Re-filing…'; }
+    const {category, tags} = await classifyMemory(mem.text);
+    mem.category = category; mem.tags = tags;
+    await save();
+    renderMemoryList(searchActiveMem ? [mem] : state.memories, searchActiveMem);
+    renderTimeline(); renderStats(); renderCategoryChart();
+  }
+
+  async function deleteMemory(id){
+    if(!confirm('Delete this memory entry? This cannot be undone.')) return;
+    state.memories = state.memories.filter(m=>m.id!==id);
+    await save();
+    renderMemoryList(state.memories, false);
+    renderTimeline(); renderStats(); renderCategoryChart();
+  }
+
+  // ---------- Rendering: Assets ----------
+  function assetStamp(a, n){
+    return `<div class="stamp" style="border-color:${ASSET_COLOR};color:${ASSET_COLOR};">${catalogNo('AT', n)}</div>`;
+  }
+
+  function renderAssetList(list, isSearch){
+    const container = document.getElementById('asset-list');
+    if(!list.length){
+      container.innerHTML = `<div class="empty">${isSearch ? 'Nothing matched that search.' : 'No objects registered yet.'}</div>`;
+      return;
+    }
+    const sorted = [...list].sort((a,b)=> new Date(b.date) - new Date(a.date));
+    container.innerHTML = sorted.map(a => {
+      const idx = state.assets.findIndex(x=>x.id===a.id);
+      const histHtml = a.history.length
+        ? a.history.slice().reverse().map(h => `<div class="history-item">${fmtDate(h.date)} — ${escapeHtml(h.location.join(' › '))}</div>`).join('')
+        : `<div class="history-item">No previous locations logged.</div>`;
+      return `<div class="entry">
+        ${assetStamp(a, idx+1)}
+        <div class="entry-body">
+          <div class="entry-top">
+            <span class="cat-dot" style="background:${ASSET_COLOR};"></span>
+            <span class="cat-label">${escapeHtml(a.category)}</span>
+            <span class="entry-date">registered ${fmtDate(a.date)}</span>
+          </div>
+          <div class="entry-text" style="font-family:'Fraunces',serif;font-size:17px;font-weight:600;margin-bottom:2px;">${escapeHtml(a.name)}</div>
+          <div class="loc-path">${a.location.map((l,i)=> i===a.location.length-1 ? `<b>${escapeHtml(l)}</b>` : escapeHtml(l)).join(' › ')}</div>
+          <div class="entry-actions">
+            <button class="ghost" data-move="${a.id}">Move object</button>
+            <button class="ghost" data-history="${a.id}">History</button>
+            <button class="ghost" data-edit-asset="${a.id}">Rename</button>
+            <button class="ghost danger" data-del-asset="${a.id}">Delete</button>
+          </div>
+          <div class="history" id="hist-${a.id}">${histHtml}</div>
+        </div>
+      </div>`;
+    }).join('');
+
+    container.querySelectorAll('[data-move]').forEach(btn=>{
+      btn.addEventListener('click', () => moveAsset(btn.getAttribute('data-move')));
+    });
+    container.querySelectorAll('[data-history]').forEach(btn=>{
+      btn.addEventListener('click', () => {
+        document.getElementById('hist-'+btn.getAttribute('data-history')).classList.toggle('open');
+      });
+    });
+    container.querySelectorAll('[data-edit-asset]').forEach(btn=>{
+      btn.addEventListener('click', () => editAsset(btn.getAttribute('data-edit-asset')));
+    });
+    container.querySelectorAll('[data-del-asset]').forEach(btn=>{
+      btn.addEventListener('click', () => deleteAsset(btn.getAttribute('data-del-asset')));
+    });
+  }
+
+  async function editAsset(id){
+    const asset = state.assets.find(a=>a.id===id);
+    if(!asset) return;
+    const updated = prompt('Rename object:', asset.name);
+    if(updated === null || !updated.trim()) return;
+    asset.name = updated.trim();
+    await save();
+    renderAssetList(searchActiveAsset ? [asset] : state.assets, searchActiveAsset);
+    renderTimeline();
+  }
+
+  async function deleteAsset(id){
+    if(!confirm('Delete this object from your inventory? This cannot be undone.')) return;
+    state.assets = state.assets.filter(a=>a.id!==id);
+    await save();
+    renderAssetList(state.assets, false);
+    renderTimeline(); renderStats(); renderCategoryChart();
+  }
+
+  async function moveAsset(id){
+    const asset = state.assets.find(a=>a.id===id);
+    if(!asset) return;
+    const input = prompt(`Move "${asset.name}" to (comma separated path):`, asset.location.join(', '));
+    if(!input) return;
+    const newLoc = input.split(',').map(s=>s.trim()).filter(Boolean);
+    if(!newLoc.length) return;
+    asset.history.push({location: asset.location, date: asset.date});
+    asset.location = newLoc;
+    asset.date = new Date().toISOString();
+    await save();
+    renderAssetList(state.assets, false);
+    renderTimeline();
+    renderStats();
+  }
+
+  // ---------- Rendering: Timeline ----------
+  function renderTimeline(){
+    const events = [];
+    state.memories.forEach(m => events.push({date:m.date, kind:'memory', color:(CATS[m.category]||CATS.Knowledge).color, label:m.category, text:m.text}));
+    state.assets.forEach(a => {
+      events.push({date:a.date, kind:'asset', color:ASSET_COLOR, label:'registered', text:`${a.name} — ${a.location.join(' › ')}`});
+      a.history.forEach(h => events.push({date:h.date, kind:'asset', color:ASSET_COLOR, label:'located', text:`${a.name} — ${h.location.join(' › ')}`}));
+    });
+    events.sort((a,b)=> new Date(b.date) - new Date(a.date));
+    const container = document.getElementById('timeline-list');
+    if(!events.length){ container.innerHTML = `<div class="empty">Nothing filed yet — your timeline will build as you go.</div>`; return; }
+
+    let html = '';
+    let lastMonth = '';
+    events.forEach(ev => {
+      const d = new Date(ev.date);
+      const monthKey = d.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+      if(monthKey !== lastMonth){
+        html += `<div class="month-divider">${monthKey}</div>`;
+        lastMonth = monthKey;
+      }
+      html += `<div class="tl-item">
+        <span class="tl-date">${d.toLocaleDateString('en-US',{day:'2-digit',month:'short'})}</span>
+        <span class="tl-kind" style="color:${ev.color};border:1px solid ${ev.color};">${ev.label}</span>
+        <span class="tl-text">${escapeHtml(ev.text)}</span>
+      </div>`;
+    });
+    container.innerHTML = html;
+  }
+
+  // ---------- Rendering: Insights ----------
+  function renderCategoryChart(){
+    const container = document.getElementById('category-chart');
+    const counts = {};
+    Object.keys(CATS).forEach(c => counts[c] = 0);
+    state.memories.forEach(m => { counts[m.category] = (counts[m.category]||0) + 1; });
+    const max = Math.max(1, ...Object.values(counts));
+    if(!state.memories.length){
+      container.innerHTML = `<div class="empty">Category breakdown will appear once you've filed a few memories.</div>`;
+      return;
+    }
+    container.innerHTML = `<label style="margin-bottom:12px;">Memories by category</label>` +
+      Object.entries(counts).map(([cat, n]) => `
+        <div class="chart-row">
+          <span class="chart-label">${escapeHtml(cat)}</span>
+          <span class="chart-track"><span class="chart-fill" style="width:${(n/max*100).toFixed(0)}%;background:${CATS[cat].color};"></span></span>
+          <span class="chart-count">${n}</span>
+        </div>`).join('');
+  }
+
+  function renderStats(){
+    const container = document.getElementById('stats-grid');
+    const totalMoves = state.assets.reduce((s,a)=>s+a.history.length,0);
+    container.innerHTML = `
+      <div class="stat"><div class="num">${state.memories.length}</div><div class="lbl">Memories filed</div></div>
+      <div class="stat"><div class="num">${state.assets.length}</div><div class="lbl">Objects tracked</div></div>
+      <div class="stat"><div class="num">${totalMoves}</div><div class="lbl">Location changes</div></div>
+    `;
+  }
+
+  async function runInsights(){
+    const btn = document.getElementById('insights-btn');
+    const list = document.getElementById('insights-list');
+    btn.disabled = true;
+    btn.innerHTML = 'Thinking<span class="loading-dots"></span>';
+    const insights = await generateInsights();
+    btn.disabled = false;
+    btn.textContent = 'Generate insights';
+    list.innerHTML = insights.map(txt => `
+      <div class="insight-card"><div class="seal">✦</div><div>${escapeHtml(txt)}</div></div>
+    `).join('');
+  }
+
+  // ---------- Actions ----------
+  async function fileMemory(){
+    const ta = document.getElementById('mem-input');
+    const text = ta.value.trim();
+    if(!text) return;
+    const btn = document.getElementById('mem-file-btn');
+    btn.disabled = true; btn.innerHTML = 'Filing<span class="loading-dots"></span>';
+    const {category, tags} = await classifyMemory(text);
+    state.seq.mv += 1;
+    state.memories.push({id:uid(), text, category, tags, date:new Date().toISOString()});
+    await save();
+    ta.value = '';
+    btn.disabled = false; btn.textContent = 'File entry';
+    renderMemoryList(state.memories, false);
+    renderTimeline(); renderStats(); renderCategoryChart();
+  }
+
+  async function fileAsset(){
+    const nameEl = document.getElementById('asset-name');
+    const locEl = document.getElementById('asset-loc');
+    const catEl = document.getElementById('asset-cat');
+    const name = nameEl.value.trim();
+    const loc = locEl.value.split(',').map(s=>s.trim()).filter(Boolean);
+    if(!name || !loc.length) return;
+    state.seq.at += 1;
+    state.assets.push({id:uid(), name, category:catEl.value, location:loc, history:[], date:new Date().toISOString()});
+    await save();
+    nameEl.value=''; locEl.value='';
+    renderAssetList(state.assets, false);
+    renderTimeline(); renderStats();
+  }
+
+  async function runMemSearch(){
+    const q = document.getElementById('mem-search').value.trim();
+    const note = document.getElementById('mem-search-note');
+    if(!q) return;
+    note.style.display='block'; note.innerHTML = 'Searching the vault<span class="loading-dots"></span>';
+    document.getElementById('mem-search-clear').style.display='inline-block';
+    const ids = await semanticSearch(q, state.memories, m=>`[${m.category}] ${m.text}`, 'mem');
+    const results = ids.map(id => state.memories.find(m=>m.id===id)).filter(Boolean);
+    searchActiveMem = true;
+    note.textContent = `${results.length} result${results.length===1?'':'s'} for "${q}"`;
+    renderMemoryList(results, true);
+  }
+
+  async function runAssetSearch(){
+    const q = document.getElementById('asset-search').value.trim();
+    const note = document.getElementById('asset-search-note');
+    if(!q) return;
+    note.style.display='block'; note.innerHTML = 'Searching the ledger<span class="loading-dots"></span>';
+    document.getElementById('asset-search-clear').style.display='inline-block';
+    const ids = await semanticSearch(q, state.assets, a=>`${a.name} (${a.category}) in ${a.location.join(' > ')}`, 'asset');
+    const results = ids.map(id => state.assets.find(a=>a.id===id)).filter(Boolean);
+    searchActiveAsset = true;
+    note.textContent = `${results.length} result${results.length===1?'':'s'} for "${q}"`;
+    renderAssetList(results, true);
+  }
+
+  function clearMemSearch(){
+    document.getElementById('mem-search').value='';
+    document.getElementById('mem-search-note').style.display='none';
+    document.getElementById('mem-search-clear').style.display='none';
+    searchActiveMem = false;
+    renderMemoryList(state.memories, false);
+  }
+  function clearAssetSearch(){
+    document.getElementById('asset-search').value='';
+    document.getElementById('asset-search-note').style.display='none';
+    document.getElementById('asset-search-clear').style.display='none';
+    searchActiveAsset = false;
+    renderAssetList(state.assets, false);
+  }
+
+  // ---------- Voice search ----------
+  const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+  function setupVoice(inputId, btnId, onDone){
+    const btn = document.getElementById(btnId);
+    if(!SpeechRec){ btn.style.display = 'none'; return; }
+    let recognizing = false, recognizer = null;
+    btn.addEventListener('click', () => {
+      if(recognizing){ recognizer.stop(); return; }
+      recognizer = new SpeechRec();
+      recognizer.lang = 'en-US';
+      recognizer.interimResults = false;
+      recognizer.maxAlternatives = 1;
+      recognizer.onstart = () => { recognizing = true; btn.classList.add('recording'); };
+      recognizer.onend = () => { recognizing = false; btn.classList.remove('recording'); };
+      recognizer.onerror = () => { recognizing = false; btn.classList.remove('recording'); };
+      recognizer.onresult = (e) => {
+        const transcript = e.results[0][0].transcript;
+        document.getElementById(inputId).value = transcript;
+        if(onDone) onDone();
+      };
+      try{ recognizer.start(); }catch(e){ recognizing = false; }
+    });
+  }
+
+  // ---------- Camera scan ----------
+  let cameraStream = null;
+
+  async function openCamera(){
+    const modal = document.getElementById('camera-modal');
+    const note = document.getElementById('camera-context-note');
+    const q = document.getElementById('asset-search').value.trim();
+    note.textContent = q
+      ? `Looking for "${q}" — plus anything else visible in frame.`
+      : 'Point the camera at a shelf, drawer, or wardrobe to identify what\'s there.';
+    document.getElementById('camera-results').innerHTML = '';
+    document.getElementById('camera-shot').style.display = 'none';
+    document.getElementById('camera-video').style.display = 'block';
+    document.getElementById('camera-retake-btn').style.display = 'none';
+    document.getElementById('camera-capture-btn').style.display = 'inline-block';
+    document.getElementById('camera-capture-btn').disabled = false;
+    document.getElementById('camera-capture-btn').textContent = 'Capture';
+    modal.classList.add('open');
+    try{
+      cameraStream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+      document.getElementById('camera-video').srcObject = cameraStream;
+    }catch(e){
+      document.getElementById('camera-results').innerHTML =
+        `<div class="found-banner no">Couldn't access the camera — check your browser's camera permission, or this device may not support it.</div>`;
+    }
+  }
+
+  function closeCamera(){
+    document.getElementById('camera-modal').classList.remove('open');
+    if(cameraStream){ cameraStream.getTracks().forEach(t=>t.stop()); cameraStream = null; }
+  }
+
+  async function captureAndAnalyze(){
+    const video = document.getElementById('camera-video');
+    const canvas = document.getElementById('camera-canvas');
+    const shot = document.getElementById('camera-shot');
+    if(!video.videoWidth){ return; }
+    const w = 640, h = Math.round((video.videoHeight / video.videoWidth) * 640);
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(video, 0, 0, w, h);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+    shot.src = dataUrl; shot.style.display = 'block';
+    video.style.display = 'none';
+    if(cameraStream){ cameraStream.getTracks().forEach(t=>t.stop()); cameraStream = null; }
+    document.getElementById('camera-capture-btn').style.display = 'none';
+    document.getElementById('camera-retake-btn').style.display = 'inline-block';
+
+    const results = document.getElementById('camera-results');
+    results.innerHTML = `<p class="search-note" style="display:block;">Analyzing photo<span class="loading-dots"></span></p>`;
+
+    const base64 = dataUrl.split(',')[1];
+    const query = document.getElementById('asset-search').value.trim();
+    const analysis = await analyzeShelfImage(base64, query);
+    renderCameraResults(analysis, query);
+  }
+
+  async function analyzeShelfImage(base64jpeg, query){
+    const promptText = query
+      ? `This is a photo of a shelf, drawer, or wardrobe. The user is looking for: "${query}". First decide whether that item is visible in the photo and briefly describe where in the frame if so. Then list every distinct physical object you can identify in the photo (max 10), each with a short name and a best-guess category from: Documents, Electronics, Clothing, Tools, Valuables, Stationery, Other.\n\nRespond as JSON exactly like: {"foundQuery": true, "foundDescription": "short sentence", "objects": [{"name":"...","category":"..."}]}`
+      : `This is a photo of a shelf, drawer, or wardrobe. List every distinct physical object you can identify in the photo (max 10), each with a short name and a best-guess category from: Documents, Electronics, Clothing, Tools, Valuables, Stationery, Other.\n\nRespond as JSON exactly like: {"foundQuery": null, "foundDescription": null, "objects": [{"name":"...","category":"..."}]}`;
+    try{
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({
+          model:'claude-sonnet-4-6',
+          max_tokens:1000,
+          system: "You identify physical objects in photos for a personal inventory app. Respond with ONLY valid JSON, no markdown fences, no explanation.",
+          messages:[{role:'user', content:[
+            {type:'image', source:{type:'base64', media_type:'image/jpeg', data:base64jpeg}},
+            {type:'text', text: promptText}
+          ]}]
+        })
+      });
+      const data = await res.json();
+      const text = (data.content||[]).map(b=>b.text||'').join('');
+      const clean = text.replace(/```json|```/g,'').trim();
+      return JSON.parse(clean);
+    }catch(e){
+      console.error('vision call failed', e);
+      return null;
+    }
+  }
+
+  function renderCameraResults(analysis, query){
+    const results = document.getElementById('camera-results');
+    if(!analysis){
+      results.innerHTML = `<div class="found-banner no">Couldn't analyze that photo — try again with better lighting.</div>`;
+      return;
+    }
+    let html = '';
+    if(query){
+      const found = !!analysis.foundQuery;
+      html += `<div class="found-banner ${found ? 'yes' : 'no'}">${found ? '✓ Found — ' : '✗ Not visible here — '}${escapeHtml(analysis.foundDescription || (found ? 'it looks like it\'s in this shot.' : 'try another shelf or drawer.'))}</div>`;
+    }
+    const objects = Array.isArray(analysis.objects) ? analysis.objects : [];
+    if(objects.length){
+      html += `<label style="margin-top:6px;">Detected objects — check any to add to your inventory</label>`;
+      html += `<div id="detected-list">` + objects.map((o,i) => `
+        <div class="detected-item">
+          <input type="checkbox" id="det-${i}" checked data-name="${escapeHtml(o.name)}" data-cat="${escapeHtml(o.category || 'Other')}">
+          <span class="di-name">${escapeHtml(o.name)}</span>
+          <span class="di-cat">${escapeHtml(o.category || 'Other')}</span>
+        </div>`).join('') + `</div>`;
+      html += `<label style="margin-top:12px;">Location for selected items</label>
+        <input type="text" id="scan-location" placeholder="e.g. Home, Bedroom, Wardrobe, Middle Shelf" value="Wardrobe">
+        <button class="primary" id="scan-add-btn">Add checked items to inventory</button>`;
+    } else {
+      html += `<div class="empty">No distinct objects identified in this photo.</div>`;
+    }
+    results.innerHTML = html;
+    const addBtn = document.getElementById('scan-add-btn');
+    if(addBtn) addBtn.addEventListener('click', addScannedObjects);
+  }
+
+  async function addScannedObjects(){
+    const locInput = document.getElementById('scan-location');
+    const loc = locInput.value.split(',').map(s=>s.trim()).filter(Boolean);
+    if(!loc.length){ locInput.focus(); return; }
+    const checked = Array.from(document.querySelectorAll('#detected-list input[type="checkbox"]:checked'));
+    if(!checked.length) return;
+    checked.forEach(cb => {
+      state.seq.at += 1;
+      state.assets.push({id:uid(), name:cb.dataset.name, category:cb.dataset.cat, location:loc, history:[], date:new Date().toISOString()});
+    });
+    await save();
+    renderAssetList(state.assets, false);
+    renderTimeline(); renderStats();
+    closeCamera();
+  }
+
+  async function resetDemo(){
+    if(!confirm('Reset all data and reload demo seed entries?')) return;
+    seedDemoData();
+    await save();
+    renderAll();
+  }
+
+  // ---------- Dictation (voice-to-text for filing entries) ----------
+  function setupDictate(textareaId, btnId){
+    const btn = document.getElementById(btnId);
+    if(!SpeechRec){ btn.style.display = 'none'; return; }
+    let recognizing = false, recognizer = null;
+    btn.addEventListener('click', () => {
+      if(recognizing){ recognizer.stop(); return; }
+      const ta = document.getElementById(textareaId);
+      recognizer = new SpeechRec();
+      recognizer.lang = 'en-US';
+      recognizer.interimResults = false;
+      recognizer.maxAlternatives = 1;
+      recognizer.onstart = () => { recognizing = true; btn.classList.add('recording'); };
+      recognizer.onend = () => { recognizing = false; btn.classList.remove('recording'); };
+      recognizer.onerror = () => { recognizing = false; btn.classList.remove('recording'); };
+      recognizer.onresult = (e) => {
+        const transcript = e.results[0][0].transcript;
+        ta.value = ta.value.trim() ? (ta.value.trim() + ' ' + transcript) : transcript;
+        ta.focus();
+      };
+      try{ recognizer.start(); }catch(e){ recognizing = false; }
+    });
+  }
+
+  // ---------- Export / Import ----------
+  function exportData(){
+    const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `syncxyou-export-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function importData(file){
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      try{
+        const parsed = JSON.parse(e.target.result);
+        if(!Array.isArray(parsed.memories) || !Array.isArray(parsed.assets)){
+          alert('That file doesn\'t look like a SyncXyou export.');
+          return;
+        }
+        if(!confirm(`Import ${parsed.memories.length} memories and ${parsed.assets.length} objects? This replaces your current data.`)) return;
+        state = parsed;
+        state.seq = state.seq || {mv: state.memories.length, at: state.assets.length};
+        await save();
+        renderAll();
+      }catch(err){
+        alert('Could not read that file — make sure it\'s a valid SyncXyou export.');
+      }
+    };
+    reader.readAsText(file);
+  }
+
+  // ---------- Offline detection ----------
+  function updateOfflineBanner(){
+    document.getElementById('offline-banner').classList.toggle('show', !navigator.onLine);
+  }
+
+  function renderAll(){
+    renderMemoryList(state.memories, false);
+    renderAssetList(state.assets, false);
+    renderTimeline();
+    renderStats();
+    renderCategoryChart();
+    document.getElementById('insights-list').innerHTML = '';
+  }
+
+  // ---------- Wiring ----------
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  document.getElementById('mem-file-btn').addEventListener('click', fileMemory);
+  document.getElementById('asset-file-btn').addEventListener('click', fileAsset);
+  document.getElementById('mem-search-btn').addEventListener('click', runMemSearch);
+  document.getElementById('asset-search-btn').addEventListener('click', runAssetSearch);
+  document.getElementById('mem-search-clear').addEventListener('click', clearMemSearch);
+  document.getElementById('asset-search-clear').addEventListener('click', clearAssetSearch);
+  document.getElementById('insights-btn').addEventListener('click', runInsights);
+  document.getElementById('reset-link').addEventListener('click', resetDemo);
+  document.getElementById('mem-search').addEventListener('keydown', e=>{ if(e.key==='Enter') runMemSearch(); });
+  document.getElementById('asset-search').addEventListener('keydown', e=>{ if(e.key==='Enter') runAssetSearch(); });
+  document.getElementById('mem-input').addEventListener('keydown', e=>{
+    if((e.metaKey || e.ctrlKey) && e.key==='Enter') fileMemory();
+  });
+
+  setupVoice('mem-search', 'mem-mic-btn', runMemSearch);
+  setupVoice('asset-search', 'asset-mic-btn', runAssetSearch);
+  setupDictate('mem-input', 'mem-dictate-btn');
+
+  document.getElementById('scan-btn').addEventListener('click', openCamera);
+  document.getElementById('camera-close-btn').addEventListener('click', closeCamera);
+  document.getElementById('camera-capture-btn').addEventListener('click', captureAndAnalyze);
+  document.getElementById('camera-retake-btn').addEventListener('click', openCamera);
+
+  document.getElementById('export-link').addEventListener('click', exportData);
+  document.getElementById('import-link').addEventListener('click', () => document.getElementById('import-file').click());
+  document.getElementById('import-file').addEventListener('change', (e) => {
+    if(e.target.files && e.target.files[0]) importData(e.target.files[0]);
+    e.target.value = '';
+  });
+
+  window.addEventListener('online', updateOfflineBanner);
+  window.addEventListener('offline', updateOfflineBanner);
+  updateOfflineBanner();
+
+  document.addEventListener('keydown', (e) => {
+    if(e.key === '/' && document.activeElement.tagName !== 'INPUT' && document.activeElement.tagName !== 'TEXTAREA'){
+      const activeTab = document.querySelector('.tab-btn.active').dataset.tab;
+      const target = activeTab === 'assets' ? 'asset-search' : 'mem-search';
+      e.preventDefault();
+      document.getElementById(target).focus();
+    }
+  });
+
+  // ---------- Init ----------
+  (async function init(){
+    const loaded = await load();
+    if(!loaded || (!state.memories.length && !state.assets.length)){
+      seedDemoData();
+      await save();
+    }
+    renderAll();
+  })();
+})();
+</script>
+</body>
+</html>
